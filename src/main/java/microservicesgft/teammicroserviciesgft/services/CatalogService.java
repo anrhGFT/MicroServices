@@ -21,5 +21,11 @@ public class CatalogService {
         return  productRepository.findAll();
     }
 
+    public Product createProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+
+
 
 }
