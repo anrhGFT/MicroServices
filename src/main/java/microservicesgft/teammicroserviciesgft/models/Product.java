@@ -10,9 +10,12 @@ import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import lombok.Builder;
+
 
 @Entity
 @Table(name = "product")
+@Builder
 public class Product {
 
   @Id
