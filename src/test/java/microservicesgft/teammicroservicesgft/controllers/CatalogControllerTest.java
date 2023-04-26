@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -119,14 +120,10 @@ public class CatalogControllerTest {
       assertEquals(product, responseEntity.getBody());
     } 
 
-  
-
-
-
 
     @Test
     void testUpdateProduct() {
-        // Arrange
+        
         int productId = 1;
         Product productToUpdate = new Product();
         productToUpdate.setItemId(productId);
@@ -142,13 +139,32 @@ public class CatalogControllerTest {
         updatedProduct.setStock(10);
         when(catalogService.updateProduct(any(Product.class))).thenReturn(updatedProduct);
         
-        // Act
+        
         ResponseEntity<Product> response = catalogController.updateProduct(productId, productToUpdate);
         
-        // Assert
+        
         verify(catalogService).updateProduct(productToUpdate);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(updatedProduct, response.getBody());
     }
-   
+
+    @Test
+    void testDeleteProduct() throws Exception {
+        int productId = 1;
+        Product mockProduct = new Product();
+        mockProduct.setItemId(productId);
+        mockProduct.setName("Mock Product");
+        mockProduct.setDescription("Mock Description");
+        mockProduct.setPrice(9.99);
+        mockProduct.setStock(15);
+        
+        doNothing().when(catalogService).deleteProduct(productId);
+        
+        mockMvc.perform(delete("/catalog/deleteproduct/" + productId))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Product with id " + productId + " has been deleted"));
+        
+        verify(catalogService, times(1)).deleteProduct(productId);
+       
+    }
 }

@@ -19,11 +19,19 @@ public class CatalogService {
     public CatalogService(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
+    public Product getProductById(int item_id) {
+        Optional<Product> optionalProduct = productRepository.findById(item_id);
+        if (optionalProduct.isPresent()) {
+            return optionalProduct.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with ID: " + item_id);
+        }
+    }
 
     public List<Product> findAllProducts(){
         return  productRepository.findAll();
     }
-    
+
     public Product createProduct(Product product) {
         return productRepository.save(product);
     }
@@ -37,6 +45,13 @@ public class CatalogService {
     }
 
 
-
+    public void deleteProduct(int item_id) {
+        Optional<Product> optionalProduct = productRepository.findById(item_id);
+        if (optionalProduct.isPresent()) {
+            productRepository.delete(optionalProduct.get());
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product does not exist"); 
+        }
+    }
 
 }

@@ -3,10 +3,12 @@ package microservicesgft.teammicroservicesgft.services;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import microservicesgft.teammicroserviciesgft.models.Product;
 import microservicesgft.teammicroserviciesgft.repositories.ProductRepository;
@@ -63,4 +66,27 @@ public void createProductTest() {
 
     assertEquals(product, result);
 }
+
+@Test
+public void deleteProductTest() {
+    int itemId = 1;
+    Product deletedProduct = new Product(itemId, "maceta","50L", 10.00, 3);
+    when(productRepository.findById(itemId)).thenReturn(Optional.of(deletedProduct));
+
+    catalogService.deleteProduct(itemId);
+
+    verify(productRepository, times(1)).findById(itemId);
+    verify(productRepository, times(1)).delete(deletedProduct);
+}
+@Test
+public void deleteNonExistingProductTest() {
+   int itemId = 1;
+    when(productRepository.findById(itemId)).thenReturn(Optional.empty());
+
+    assertThrows(ResponseStatusException.class, () -> catalogService.deleteProduct(itemId));
+
+    verify(productRepository, times(1)).findById(itemId);
+    verify(productRepository, times(0)).delete(null);
+}
+
 }
