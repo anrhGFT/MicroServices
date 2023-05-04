@@ -4,6 +4,7 @@ import static org.mockito.Mockito.when;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,8 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import microservicesgft.teammicroserviciesgft.controllers.CatalogController;
@@ -37,33 +36,19 @@ public class CatalogControllerTest {
     private CatalogService catalogService;
     @InjectMocks
     private CatalogController catalogController;
-    private List<Product> productList;
+    
     private MockMvc mockMvc;
     @BeforeEach
     public void setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(catalogController).build();
-        productList = new ArrayList<>();
-        Product product1 = new Product();
-        product1.setItemId(1);
-        product1.setName("Product 1");
-        product1.setDescription("Product 1 Description");
-        product1.setPrice(10.99);
-        product1.setStock(20);
-        productList.add(product1);
-        Product product2 = new Product();
-        product2.setItemId(2);
-        product2.setName("Product 2");
-        product2.setDescription("Product 2 Description");
-        product2.setPrice(15.99);
-        product2.setStock(10);
-        productList.add(product2);
+    
     }
     @Test
     public void testGetAllProducts() throws Exception {
        
         List<Product> productList = new ArrayList<>();
-        productList.add(new Product(1, "Product A", "Description A", 10.0, 20));
-        productList.add(new Product(2, "Product B", "Description B", 20.0, 30));
+        productList.add(new Product(1, "Product A", "Description A","CategoryA", 10.0, 20));
+        productList.add(new Product(2, "Product B", "Description B","CategoryB", 20.0, 30));
 
        
         when(catalogService.findAllProducts()).thenReturn(productList);
@@ -74,11 +59,13 @@ public class CatalogControllerTest {
                 .andExpect(jsonPath("$[0].itemId", is(1)))
                 .andExpect(jsonPath("$[0].name", is("Product A")))
                 .andExpect(jsonPath("$[0].description", is("Description A")))
+                .andExpect(jsonPath("$[0].category", is("CategoryA")))
                 .andExpect(jsonPath("$[0].price", is(10.0)))
                 .andExpect(jsonPath("$[0].stock", is(20)))
                 .andExpect(jsonPath("$[1].itemId", is(2)))
                 .andExpect(jsonPath("$[1].name", is("Product B")))
                 .andExpect(jsonPath("$[1].description", is("Description B")))
+                .andExpect(jsonPath("$[1].category", is("CategoryB")))
                 .andExpect(jsonPath("$[1].price", is(20.0)))
                 .andExpect(jsonPath("$[1].stock", is(30)));
 
@@ -167,4 +154,49 @@ public class CatalogControllerTest {
         verify(catalogService, times(1)).deleteProduct(productId);
        
     }
+
+    @Test
+    public void testGetProductsByCategory() throws Exception {
+        
+        String category = "test category";
+        List<Product> products = new ArrayList<>();
+        products.add(new Product(1, "Product 1", "Test product 1", category,10.00,2));
+        products.add(new Product(2, "Product 2", "Test product 2", category,13.00,5));
+        when(catalogService.findProductsByCategory(category)).thenReturn(products);
+
+        
+        mockMvc.perform(get("/catalog/categories/{category}", category))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].itemId").value(1))
+                .andExpect(jsonPath("$[0].name").value("Product 1"))
+                .andExpect(jsonPath("$[0].description").value("Test product 1"))
+                .andExpect(jsonPath("$[0].category").value(category))
+                .andExpect(jsonPath("$[0].price").value(10.00))
+                .andExpect(jsonPath("$[0].stock").value(2))
+                .andExpect(jsonPath("$[1].itemId").value(2))
+                .andExpect(jsonPath("$[1].name").value("Product 2"))
+                .andExpect(jsonPath("$[1].description").value("Test product 2"))
+                .andExpect(jsonPath("$[1].category").value(category))
+                .andExpect(jsonPath("$[1].price").value(13.00))
+                .andExpect(jsonPath("$[1].stock").value(5));
+
+        
+        verify(catalogService, times(1)).findProductsByCategory(category);
+    }
+
+    @Test
+    public void testGetProductsByCategoryNotFound() throws Exception {
+        
+        String category = "non-existent category";
+        when(catalogService.findProductsByCategory(category)).thenReturn(Collections.emptyList());
+
+        
+        mockMvc.perform(get("/catalog/categories/{category}", category))
+                .andExpect(status().isNotFound());
+
+        
+        verify(catalogService, times(1)).findProductsByCategory(category);
+    }
 }
+

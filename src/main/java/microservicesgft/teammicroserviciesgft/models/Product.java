@@ -10,6 +10,9 @@ import javax.persistence.Table;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.Builder;
 
 
@@ -27,6 +30,8 @@ public class Product {
   @NotNull
   private String description;
   @NotNull
+  private String category;
+  @NotNull
   private double price;
   @NotNull
   @Min(0)
@@ -38,12 +43,14 @@ public class Product {
     int itemId,
     String name,
     String description,
+    String category,
     double price,
     int stock
   ) {
     this.itemId = itemId;
     this.name = name;
     this.description = description;
+    this.category = category;
     this.price = price;
     this.stock = stock;
   }
@@ -80,6 +87,14 @@ public class Product {
     this.description = description;
   }
 
+  public String getCategory() {
+    return this.category;
+  }
+
+  public void setCategory(String category) {
+    this.category = category;
+  }
+
   public double getPrice() {
     return price;
   }
@@ -89,12 +104,11 @@ public class Product {
   }
   @Override
   public String toString() {
-      return "Product{" +
-              "itemId=" + itemId +
-              ", name='" + name + '\'' +
-              ", description='" + description + '\'' +
-              ", price=" + price +
-              ", stock=" + stock +
-              '}';
+      try {
+          return new ObjectMapper().writeValueAsString(this);
+      } catch (JsonProcessingException e) {
+          e.printStackTrace();
+          return null;
+      }
   }
 }

@@ -37,15 +37,14 @@ public class CatalogServiceTest {
     
     void setUp(){
       catalogService = new CatalogService(productRepository);
-        catalog.add(new Product(1, "maceta","50L", 10.00, 3));
-        catalog.add(new Product(2, "bicicleta","bici electrica", 300.00, 10));
+       
        
    }
    @Test
    public void updateProductTest(){
        
-       Product existingProduct = new Product(1, "maceta","50L", 10.00, 3);
-       Product updatedProduct = new Product(1, "maceta","100L", 15.00, 5);
+       Product existingProduct = new Product(1, "maceta","50L","category A", 10.00, 3);
+       Product updatedProduct = new Product(1, "maceta","100L","category A",15.00, 5);
        when(productRepository.existsById(existingProduct.getItemId())).thenReturn(true);
        when(productRepository.save(updatedProduct)).thenReturn(updatedProduct);
 
@@ -59,7 +58,7 @@ public class CatalogServiceTest {
    }
   @Test
 public void createProductTest() {
-    Product product = new Product(3, "silla", "silla de madera", 20.00, 5);
+    Product product = new Product(3, "silla", "silla de madera", "jardinería",20.00, 5);
     when(productRepository.save(product)).thenReturn(product);
 
     Product result = catalogService.createProduct(product);
@@ -70,7 +69,7 @@ public void createProductTest() {
 @Test
 public void deleteProductTest() {
     int itemId = 1;
-    Product deletedProduct = new Product(itemId, "maceta","50L", 10.00, 3);
+    Product deletedProduct = new Product(itemId, "maceta","50L","jardinería", 10.00, 3);
     when(productRepository.findById(itemId)).thenReturn(Optional.of(deletedProduct));
 
     catalogService.deleteProduct(itemId);
@@ -87,6 +86,19 @@ public void deleteNonExistingProductTest() {
 
     verify(productRepository, times(1)).findById(itemId);
     verify(productRepository, times(0)).delete(null);
+}
+@Test
+public void findProductsByCategoryTest() {
+    String category = "category A";
+    List<Product> productsInCategory = new ArrayList<>();
+    productsInCategory.add(new Product(1, "maceta", "50L", category, 10.00, 3));
+    productsInCategory.add(new Product(2, "silla", "silla de madera", category, 20.00, 5));
+    when(productRepository.findProductsByCategory(category)).thenReturn(productsInCategory);
+
+    List<Product> result = catalogService.findProductsByCategory(category);
+
+    assertEquals(productsInCategory, result);
+    verify(productRepository, times(1)).findProductsByCategory(category);
 }
 
 }

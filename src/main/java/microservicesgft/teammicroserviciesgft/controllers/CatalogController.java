@@ -32,6 +32,14 @@ public class CatalogController {
    public ResponseEntity<List<Product>> getAllCatalogs (){
         return new ResponseEntity<>(catalogService.findAllProducts(), HttpStatus.OK);
     }
+    @GetMapping("/categories/{category}")
+    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable String category) {
+        List<Product> products = catalogService.findProductsByCategory(category);
+        if (products.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(products);
+    }
     @PostMapping("/createproduct")
     public ResponseEntity<Product> createData(@RequestBody Product product) {
         return ResponseEntity.status(HttpStatus.CREATED).body(catalogService.createProduct(product));

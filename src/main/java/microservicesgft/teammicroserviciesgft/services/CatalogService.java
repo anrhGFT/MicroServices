@@ -27,7 +27,7 @@ public class CatalogService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with ID: " + item_id);
         }
     }
-
+    
     public List<Product> findAllProducts(){
         return  productRepository.findAll();
     }
@@ -53,5 +53,11 @@ public class CatalogService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product does not exist"); 
         }
     }
-
+    public List<Product> findProductsByCategory(String category) {
+        List<Product> products = productRepository.findProductsByCategory(category);
+        if (products.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No products found in category: " + category);
+        }
+        return products;
+    }
 }
